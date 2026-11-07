@@ -1,0 +1,51 @@
+{
+  "name": "ffmpeg-wasm-video",
+  "version": "1.0.0",
+  "description": "Video conversion and editing in the browser with ffmpeg.wasm: probing, copy-or-encode plans, trims, crops, text, speed ramps, merges, frame extraction and a phone frame, as tested ffmpeg arguments.",
+  "keywords": [
+    "ffmpeg",
+    "ffmpeg.wasm",
+    "wasm",
+    "video",
+    "browser",
+    "convert",
+    "trim",
+    "speed ramp",
+    "drawtext"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ogdans3/ffmpeg-wasm-video.git"
+  },
+  "license": "MIT",
+  "author": "Teorimester AS",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepare": "npm run build",
+    "test": "vitest run",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ffmpeg/ffmpeg": "0.12.15"
+  },
+  "devDependencies": {
+    "@ffmpeg/core": "0.12.10",
+    "@types/node": "^26.2.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
+  }
+}
