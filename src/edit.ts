@@ -1,7 +1,7 @@
-import { BEZEL_COLOUR, evenPhoneFrame, type PhoneFrame } from './phoneframe';
-import type { VideoFormat } from './formats';
-import type { ConvertPlan, ProbeResult } from './plan';
-import { sampleRamp, SLOWER, type RampPoint, type RampRange, type RampSegment } from './ramp';
+import { BEZEL_COLOUR, evenPhoneFrame, type PhoneFrame } from './phoneframe.js';
+import type { VideoFormat } from './formats.js';
+import type { ConvertPlan, ProbeResult } from './plan.js';
+import { sampleRamp, SLOWER, type RampPoint, type RampRange, type RampSegment } from './ramp.js';
 
 /**
  * Turning an edit into ffmpeg arguments.
@@ -112,6 +112,13 @@ const TEXT_Y: Record<TextPosition, string> = {
 export const FONT_FILE = 'font.ttf';
 
 /**
+ * The caption itself, written into ffmpeg's filesystem next to the font and
+ * read by drawtext with `textfile`. See `captionFor` for why it isn't passed
+ * inside the filter.
+ */
+export const CAPTION_FILE = 'caption.txt';
+
+/**
  * What a phone frame writes into ffmpeg's filesystem before it runs: the frame
  * itself, painted once by `paintPhoneFrame`, and for a see-through video the
  * shape its alpha comes from, painted by `paintPhoneMask`.
@@ -189,23 +196,22 @@ export function evenSize(value: number): number {
 }
 
 /**
- * What has to be escaped inside drawtext's value, established by testing each
- * character against the real thing rather than by reading the parser.
+ * What a text edit writes to `CAPTION_FILE` before it runs, or null for any
+ * other edit. One line: a break becomes a space, as it always has.
  *
- * The colon has to be escaped even inside quotes, or it ends the option list
- * and drawtext fails with "Error while processing the decoded data". The
- * percent must NOT be: escaping it makes the value unparseable and drawtext
- * then draws nothing at all without reporting anything, which is worse than
- * failing. Doing both was the original bug, and it shipped because the obvious
- * test case had no punctuation in it. `expansion=none` in the filter covers
- * the percent instead.
+ * The caption goes in a file because no escaping of it inside the filter
+ * survives every character. Each layer was tried against the real core. An
+ * unescaped colon ends the option list and the filter fails. An escaped
+ * percent draws nothing and reports nothing. And inside the single quotes an
+ * escaped quote closes them, so «It's» was drawn as «Its», and a comma after
+ * an apostrophe failed the whole filter with "No such filter". Read from a
+ * file with `expansion=none`, every character is just text, and
+ * `captions.test.ts` runs the hard ones through the real core. Without
+ * `expansion=none` a percent sign blanks the whole caption, so the two belong
+ * together.
  */
-export function escapeDrawText(text: string): string {
-	return text
-		.replace(/\\/g, '\\\\')
-		.replace(/'/g, "\\'")
-		.replace(/:/g, '\\:')
-		.replace(/\r?\n/g, ' ');
+export function captionFor(op: EditOp): string | null {
+	return op.kind === 'text' ? op.text.replace(/\r?\n/g, ' ') : null;
 }
 
 /**
@@ -245,7 +251,7 @@ export function filterFor(op: EditOp): string | null {
 				// Literal text, so a percent sign is a percent sign rather than
 				// the start of a substitution drawtext would try to evaluate.
 				'expansion=none',
-				`text='${escapeDrawText(op.text)}'`,
+				`textfile=${CAPTION_FILE}`,
 				`fontsize=${Math.round(op.size)}`,
 				`fontcolor=${op.colour.replace('#', '0x')}`,
 				'x=(w-text_w)/2',

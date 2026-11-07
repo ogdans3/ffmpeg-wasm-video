@@ -7,8 +7,8 @@ import {
 	fallbackPlan,
 	planConversion,
 	type ProbeResult
-} from './plan';
-import { VIDEO_FORMATS } from './formats';
+} from './plan.js';
+import { VIDEO_FORMATS } from './formats.js';
 
 const h264: ProbeResult = {
 	videoCodec: 'h264',

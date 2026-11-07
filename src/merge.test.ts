@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { VIDEO_FORMATS } from './formats';
+import { VIDEO_FORMATS } from './formats.js';
 import {
 	copyArgs,
 	encodeArgs,
@@ -11,8 +11,8 @@ import {
 	looksCopyable,
 	outputSize,
 	totalDuration
-} from './merge';
-import type { ProbeResult } from './plan';
+} from './merge.js';
+import type { ProbeResult } from './plan.js';
 
 const mp4 = VIDEO_FORMATS.mp4;
 const webm = VIDEO_FORMATS.webm;

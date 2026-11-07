@@ -1,6 +1,8 @@
 import type { FFmpeg } from '@ffmpeg/ffmpeg';
-import type { VideoFormat } from './formats';
+import type { VideoFormat } from './formats.js';
 import {
+	CAPTION_FILE,
+	captionFor,
 	FONT_FILE,
 	needsFont,
 	PHONE_FRAME_FILE,
@@ -13,10 +15,10 @@ import {
 	stillColour,
 	type EditOp,
 	type EditOptions
-} from './edit';
-import { paintPhoneFrame, paintPhoneMask, type PhoneFrame } from './phoneframe';
-import { readFileColourTag } from './colourtag';
-import { fallbackPlan, planConversion, type PlanOptions, type ProbeResult } from './plan';
+} from './edit.js';
+import { paintPhoneFrame, paintPhoneMask, type PhoneFrame } from './phoneframe.js';
+import { readFileColourTag } from './colourtag.js';
+import { fallbackPlan, planConversion, type PlanOptions, type ProbeResult } from './plan.js';
 import {
 	copyPlan,
 	encodeArgs,
@@ -24,8 +26,8 @@ import {
 	joinLooksComplete,
 	LIST_FILE,
 	listFileContents
-} from './merge';
-import { looksReadable, parseProbe } from './probe';
+} from './merge.js';
+import { looksReadable, parseProbe } from './probe.js';
 import {
 	FRAME_FORMATS,
 	FRAME_MAX,
@@ -33,7 +35,7 @@ import {
 	planFrames,
 	tooManyFrames,
 	type FrameRequest
-} from './frames';
+} from './frames.js';
 
 /**
  * The only part of the video section that touches a browser.
@@ -362,6 +364,11 @@ export async function editVideo(
 	// two full size PNGs are drawn for it.
 	const plan = planEdit(op, target, info, outName, opts);
 	const extras = op.kind === 'phone' ? await writePhoneFrame(ff, op) : [];
+	const caption = captionFor(op);
+	if (caption !== null) {
+		await ff.writeFile(CAPTION_FILE, new TextEncoder().encode(caption));
+		extras.push(CAPTION_FILE);
+	}
 
 	const report = ({ progress }: { progress: number }) => {
 		opts.onProgress?.(Math.max(0, Math.min(1, progress)));

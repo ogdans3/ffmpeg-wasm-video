@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readColourTag, tagInMoov, type ReadBytes } from './colourtag';
+import { readColourTag, tagInMoov, type ReadBytes } from './colourtag.js';
 
 /** Bytes, from numbers and four character codes. */
 function bytes(...parts: (number[] | string | Uint8Array)[]): Uint8Array {

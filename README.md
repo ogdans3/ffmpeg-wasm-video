@@ -1,18 +1,24 @@
 # ffmpeg-wasm-video
 
-Video conversion and editing in the browser with
-[ffmpeg.wasm](https://github.com/ffmpegwasm/ffmpeg.wasm), with nothing uploaded
-anywhere. This package is the part that sits between "the user wants this clip
-trimmed" and the ffmpeg arguments that actually do it, plus a thin runner that
-loads the core and executes the plan.
+This is the video code from [imagetoolbox.org](https://imagetoolbox.org/video),
+where it runs the free video converters and editors in the browser. You can try
+every part of it there before you install it.
 
-Most of the work went into the parts that fail quietly. A `drawtext` caption
-with an unescaped colon draws nothing and reports nothing. A Chrome recording
-comes out with washed-out greys because ffmpeg.wasm drops the colour tag from
-the MOV or MP4. A stream copy into a container that claims to hold the codec
-produces a file that will not play. The tests cover those cases, and several
-of them were checked against the real ffmpeg.wasm build, not written from the
-docs.
+It does video conversion and editing with
+[ffmpeg.wasm](https://github.com/ffmpegwasm/ffmpeg.wasm), with nothing uploaded
+anywhere. It turns "the user wants this clip trimmed" into the ffmpeg arguments
+that do it, and a small runner loads the core and runs them.
+
+Most of the work went into the parts that fail quietly. Escaped inside the
+filter, a caption loses its apostrophe, and a comma after one fails the whole
+filter. So captions go to `drawtext` as a file, where every character is text.
+
+A Chrome recording comes out with washed-out greys, because ffmpeg.wasm drops
+the colour tag from the MOV or MP4. And a stream copy into a container that
+claims to hold the codec can give a file that won't play.
+
+The tests cover those cases. Several of them run the real ffmpeg.wasm build and
+check the pixels that come out, rather than trusting the docs.
 
 What is in it:
 
@@ -37,24 +43,27 @@ What is in it:
   when ffmpeg loses it.
 
 Everything except `ffmpeg.ts` is plain TypeScript with no browser or ffmpeg
-dependency, so you can use the planners with your own runner, a worker, or a
-native ffmpeg on a server.
+dependency. You can use the planners with your own runner, in a worker, or with
+a native ffmpeg on a server.
 
 ## Install
 
 ```sh
-npm install github:ogdans3/ffmpeg-wasm-video @ffmpeg/core@0.12.10
+npm install ffmpeg-wasm-video @ffmpeg/core@0.12.10
 ```
 
-The package ships TypeScript compiled for a bundler (Vite, webpack, esbuild and
-the like). `@ffmpeg/ffmpeg` comes with it.
+It's plain ES modules with type declarations, so any bundler takes it, and the
+planners run in Node as well. `@ffmpeg/ffmpeg` comes with it. The core is yours
+to serve, and every setting here was measured against version 0.12.10.
 
 ## Serve the core
 
-ffmpeg.wasm runs its core inside a worker with `importScripts`, which refuses
-cross-origin and blob URLs. Copy `ffmpeg-core.js` and `ffmpeg-core.wasm` from
-`node_modules/@ffmpeg/core/dist/esm/` into your static files, ideally under a
-path with the version in it so they can be cached for a long time:
+ffmpeg.wasm runs its core inside a worker, which refuses cross-origin and blob
+URLs. Copy `ffmpeg-core.js` and `ffmpeg-core.wasm` from
+`node_modules/@ffmpeg/core/dist/esm/` into your static files.
+
+Put them under a path with the version in it, so they can be cached for a long
+time:
 
 ```
 public/ffmpeg/0.12.10/ffmpeg-core.js
@@ -73,7 +82,7 @@ const ff = await loadFfmpeg(
 	{
 		coreURL: '/ffmpeg/0.12.10/ffmpeg-core.js',
 		wasmURL: '/ffmpeg/0.12.10/ffmpeg-core.wasm',
-		// only needed for captions
+		// only needed for captions: any TrueType font you serve
 		fontURL: '/fonts/caption.ttf'
 	},
 	({ ratio }) => console.log('core', ratio)
@@ -97,14 +106,13 @@ const trimmed = await editVideo(
 
 The other runners are `extractFrames(ff, file, request)`,
 `mergeVideos(ff, files, target)` and `readStill(ff, file)`. Every edit is one
-`EditOp`; see the type in `src/edit.ts` for the full list and what each field
-means.
+`EditOp`. The type in `src/edit.ts` has the full list and what each field means.
 
 ### Just the arguments
 
 If you run ffmpeg yourself, skip `ffmpeg.ts` and call the planners. They take
 a `ProbeResult`, which `parseProbe` builds from the lines ffmpeg prints for
-`ffmpeg -i input`:
+`ffmpeg -i input`.
 
 ```ts
 import { parseProbe, planConversion, planEdit, VIDEO_FORMATS } from 'ffmpeg-wasm-video';
@@ -118,17 +126,26 @@ plan.expectation; // 'instant' | 'quick' | 'slow'
 const blur = planEdit({ kind: 'blur', strength: 8 }, VIDEO_FORMATS.mp4, probe, 'output.mp4');
 ```
 
-The input file is always called `input` inside ffmpeg's filesystem.
+The input file is always called `input` inside ffmpeg's filesystem. A caption
+also needs its text in `CAPTION_FILE` and a font in `FONT_FILE`, and
+`captionFor(op)` gives you the text to write.
 
 ## Develop
 
 ```sh
 pnpm install
-pnpm test    # vitest, including a pixel test against the real ffmpeg.wasm core
+pnpm test    # vitest, with pixel tests against the real ffmpeg.wasm core
 pnpm check   # tsc
 pnpm build   # dist/
 ```
 
+`npm publish` builds the package and runs the tests and the type check first.
+The font in `fixtures/` is only for the tests. It's Roboto Bold, under the
+Apache License beside it.
+
 ## License
 
 MIT. Copyright Teorimester AS.
+
+The ffmpeg core itself, `@ffmpeg/core`, is GPL-2.0-or-later. This package only
+loads it, and it's the core's licence that applies to the file you serve.

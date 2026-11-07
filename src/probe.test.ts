@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { looksReadable, parseProbe } from './probe';
-import { canCopy } from './plan';
-import { VIDEO_FORMATS } from './formats';
+import { looksReadable, parseProbe } from './probe.js';
+import { canCopy } from './plan.js';
+import { VIDEO_FORMATS } from './formats.js';
 
 /** Copied verbatim out of ffmpeg.wasm in a browser, not written by hand. */
 const MP4 = [

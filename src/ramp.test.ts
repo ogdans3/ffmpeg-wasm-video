@@ -12,7 +12,7 @@ import {
 	SLOWER,
 	speedAt,
 	type RampPoint
-} from './ramp';
+} from './ramp.js';
 
 const ramp = (...pairs: [number, number][]): RampPoint[] =>
 	pairs.map(([t, speed]) => ({ t, speed }));

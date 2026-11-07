@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import { sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { evenPhoneFrame, type PhoneFrame, type PhoneFrameSettings } from './phoneframe';
+import { evenPhoneFrame, type PhoneFrame, type PhoneFrameSettings } from './phoneframe.js';
 import {
 	PHONE_FRAME_FILE,
 	PHONE_MASK_FILE,
@@ -13,9 +13,9 @@ import {
 	planEdit,
 	type EditOp,
 	type PhoneColour
-} from './edit';
-import { VIDEO_FORMATS } from './formats';
-import { parseProbe } from './probe';
+} from './edit.js';
+import { VIDEO_FORMATS } from './formats.js';
+import { parseProbe } from './probe.js';
 
 /**
  * The phone frame run through the site's own ffmpeg core, the WebAssembly

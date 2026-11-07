@@ -9,7 +9,7 @@ import {
 	phoneFrameLimits,
 	type FrameContext,
 	type PhoneFrame
-} from './phoneframe';
+} from './phoneframe.js';
 
 describe('phoneFrameDefaults', () => {
 	it('sizes the corners and the border like a phone for the owner’s 920 × 2000 screenshots', () => {

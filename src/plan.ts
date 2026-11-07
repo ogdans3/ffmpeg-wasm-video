@@ -1,5 +1,5 @@
-import type { ColourTag } from './colourtag';
-import type { VideoFormat } from './formats';
+import type { ColourTag } from './colourtag.js';
+import type { VideoFormat } from './formats.js';
 
 /**
  * Turning a conversion into ffmpeg arguments.

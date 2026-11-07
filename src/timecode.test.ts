@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatTimecode, parseTimecode } from './timecode';
+import { formatTimecode, parseTimecode } from './timecode.js';
 
 describe('parseTimecode', () => {
 	it('reads the shape a player shows', () => {

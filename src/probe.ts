@@ -1,4 +1,4 @@
-import type { ProbeResult } from './plan';
+import type { ProbeResult } from './plan.js';
 
 /**
  * Reading what is inside a video out of ffmpeg's own chatter.

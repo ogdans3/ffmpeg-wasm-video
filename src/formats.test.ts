@@ -6,7 +6,7 @@ import {
 	VIDEO_TARGETS,
 	resolveVideoFormat,
 	videoAcceptAttribute
-} from './formats';
+} from './formats.js';
 
 describe('video formats', () => {
 	it('reads five containers and writes seven targets', () => {

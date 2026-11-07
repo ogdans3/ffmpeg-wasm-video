@@ -8,7 +8,7 @@ import {
 	planFrames,
 	tooManyFrames,
 	type FrameRequest
-} from './frames';
+} from './frames.js';
 
 const req = (over: Partial<FrameRequest> = {}): FrameRequest => ({
 	format: 'jpg',

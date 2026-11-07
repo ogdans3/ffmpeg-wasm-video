@@ -1,5 +1,5 @@
-import type { VideoFormat } from './formats';
-import type { ProbeResult } from './plan';
+import type { VideoFormat } from './formats.js';
+import type { ProbeResult } from './plan.js';
 
 /**
  * Joining several videos into one.

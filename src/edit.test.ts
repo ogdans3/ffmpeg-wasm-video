@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { VIDEO_FORMATS } from './formats';
+import { VIDEO_FORMATS } from './formats.js';
 import {
-	escapeDrawText,
+	CAPTION_FILE,
+	captionFor,
 	evenSize,
 	filterFor,
 	needsFont,
@@ -20,10 +21,10 @@ import {
 	tempoChain,
 	untaggedMatrix,
 	type EditOp
-} from './edit';
-import type { ProbeResult } from './plan';
-import { BEZEL_COLOUR } from './phoneframe';
-import { defaultRamp, FASTER, sampleRamp, SLOWER, type RampPoint } from './ramp';
+} from './edit.js';
+import type { ProbeResult } from './plan.js';
+import { BEZEL_COLOUR } from './phoneframe.js';
+import { defaultRamp, FASTER, sampleRamp, SLOWER, type RampPoint } from './ramp.js';
 
 const mp4 = VIDEO_FORMATS.mp4;
 const webm = VIDEO_FORMATS.webm;
@@ -118,44 +119,37 @@ describe('filters', () => {
 			position: 'bottom',
 			box: true
 		})!;
-		expect(filter).toContain("text='Hello'");
+		expect(filter).toContain(`textfile=${CAPTION_FILE}`);
 		expect(filter).toContain('fontcolor=0xffffff');
 		expect(filter).toContain('box=1');
 		expect(filter).toContain('h*0.94-text_h');
 	});
 });
 
-describe('escapeDrawText', () => {
-	it('escapes the colon, which ends the option list even inside quotes', () => {
-		expect(escapeDrawText('9:30')).toBe('9\\:30');
+describe('captionFor', () => {
+	const text = (caption: string) =>
+		({ kind: 'text', text: caption, size: 40, colour: '#ffffff', position: 'top', box: false }) as const;
+
+	it('hands drawtext the caption as it was typed, every character included', () => {
+		// Nothing is escaped, because nothing in a file needs to be. The real
+		// core reads these in captions.test.ts.
+		expect(captionFor(text("It's 9:30, 50% done \\ æøå"))).toBe("It's 9:30, 50% done \\ æøå");
 	});
 
-	it('escapes the quote and the backslash', () => {
-		expect(escapeDrawText("it's")).toBe("it\\'s");
-		expect(escapeDrawText('a\\b')).toBe('a\\\\b');
+	it('keeps a caption on one line', () => {
+		expect(captionFor(text('one\ntwo\r\nthree'))).toBe('one two three');
 	});
 
-	it('leaves the percent alone, because escaping it breaks the filter', () => {
-		// Escaping the percent made drawtext draw nothing at all and report
-		// nothing either. Escaping the colon is required. Both verified one
-		// character at a time in a browser against the real ffmpeg build.
-		expect(escapeDrawText('50%')).toBe('50%');
+	it('has nothing to write for any other edit', () => {
+		expect(captionFor({ kind: 'blur', strength: 4 })).toBeNull();
 	});
 
-	it('flattens a line break rather than breaking the argument', () => {
-		expect(escapeDrawText('one\ntwo')).toBe('one two');
-	});
-
-	it('turns off expansion so a percent is not a substitution', () => {
-		const filter = filterFor({
-			kind: 'text',
-			text: '50%',
-			size: 40,
-			colour: '#ffffff',
-			position: 'top',
-			box: false
-		})!;
+	it('reads the caption from the file, with expansion off so a percent stays a percent', () => {
+		const filter = filterFor(text('50%'))!;
+		expect(filter).toContain(`textfile=${CAPTION_FILE}`);
 		expect(filter).toContain('expansion=none');
+		expect(filter).not.toContain('50%');
+		expect(filter).not.toMatch(/(^|:)text=/);
 	});
 });
 

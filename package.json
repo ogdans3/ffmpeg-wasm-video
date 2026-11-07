@@ -11,36 +11,57 @@
     "convert",
     "trim",
     "speed ramp",
-    "drawtext"
+    "drawtext",
+    "mp4",
+    "webm",
+    "gif",
+    "slow motion",
+    "video editor"
   ],
+  "homepage": "https://imagetoolbox.org/video",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ogdans3/ffmpeg-wasm-video.git"
   },
+  "bugs": "https://github.com/ogdans3/ffmpeg-wasm-video/issues",
   "license": "MIT",
-  "author": "Teorimester AS",
+  "author": "Teorimester AS (https://imagetoolbox.org)",
   "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "src"
+    "src",
+    "!src/**/*.test.ts"
   ],
   "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run check",
     "test": "vitest run",
     "check": "tsc --noEmit"
   },
   "dependencies": {
     "@ffmpeg/ffmpeg": "0.12.15"
+  },
+  "peerDependencies": {
+    "@ffmpeg/core": "0.12.10"
+  },
+  "peerDependenciesMeta": {
+    "@ffmpeg/core": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@ffmpeg/core": "0.12.10",
